@@ -1,14 +1,27 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Lock, Mail, ArrowRight, Eye, EyeOff, Shield } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/context/AuthContext';
 
 export default function Login() {
+  const { user, profile, loading: authLoadingGlobal } = useAuth();
   const [email, setEmail] = useState(import.meta.env.VITE_USER_EMAIL || '');
   const [password, setPassword] = useState(import.meta.env.VITE_USER_PASSWORD || '');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user && profile && !authLoadingGlobal) {
+      if (profile.role === 'ADMIN') {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
+      }
+    }
+  }, [user, profile, authLoadingGlobal, navigate]);
 
   const [isSignUp, setIsSignUp] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -22,7 +35,6 @@ export default function Login() {
     try {
       const cleanEmail = email.trim();
       if (isSignUp) {
-        // Students can sign up. Role is set to STUDENT by database trigger.
         const { error } = await supabase.auth.signUp({ 
           email: cleanEmail, 
           password,
@@ -38,10 +50,7 @@ export default function Login() {
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
         if (error) throw error;
-        
-        // Navigation will be handled by the AuthContext + AppRouter transition
-        // But for a fast UX, we can do a quick check and jump
-        navigate('/'); 
+        // Navigation is handled by the useEffect above
       }
     } catch (err: any) {
       setErrorMsg(err.message || 'Authentication failed');

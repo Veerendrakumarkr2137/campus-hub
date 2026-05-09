@@ -23,9 +23,13 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Profile not loaded yet (should be quick)
-  if (!profile && !loading) {
-     return <Navigate to="/login" replace />;
+  // Profile is still loading in the background
+  if (user && !profile) {
+    return (
+      <div className="flex-1 flex items-center justify-center min-h-screen">
+        <div className="h-12 w-12 rounded-full border-2 border-t-blue-500 border-white/10 animate-spin"></div>
+      </div>
+    );
   }
 
   // Role check

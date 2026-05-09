@@ -54,8 +54,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (mounted) {
         if (session?.user) {
           setUser(session.user);
-          await fetchProfile(session.user.id);
+          // Fetch profile in background, don't block the main UI
+          fetchProfile(session.user.id);
         }
+        // Set loading to false as soon as we know the session status
         setLoading(false);
       }
     };
@@ -63,11 +65,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     checkSession();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (mounted) {
         if (session?.user) {
           setUser(session.user);
-          await fetchProfile(session.user.id);
+          fetchProfile(session.user.id);
         } else {
           setUser(null);
           setProfile(null);
