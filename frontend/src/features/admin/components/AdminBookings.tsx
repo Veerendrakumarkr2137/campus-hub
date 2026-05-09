@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { Calendar, CheckCircle, XCircle } from 'lucide-react';
 
 export default function AdminBookings() {

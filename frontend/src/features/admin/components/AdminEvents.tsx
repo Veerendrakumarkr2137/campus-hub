@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { CalendarDays, Plus, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 

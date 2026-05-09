@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { Layers, Plus, Trash2, Edit2 } from 'lucide-react';
 
 export default function AdminResources() {

@@ -1,13 +1,14 @@
 import { motion } from 'framer-motion';
 import { Users, Calendar, Megaphone, CheckSquare, LogOut, Settings, LayoutDashboard, Layers, CalendarDays, MessageSquare } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
-import AdminStudents from '../components/admin/AdminStudents';
-import AdminResources from '../components/admin/AdminResources';
-import AdminBookings from '../components/admin/AdminBookings';
-import AdminComplaints from '../components/admin/AdminComplaints';
-import AdminEvents from '../components/admin/AdminEvents';
+import { supabase } from '@/lib/supabase';
+import AdminStudents from '../components/AdminStudents';
+import AdminResources from '../components/AdminResources';
+import AdminBookings from '../components/AdminBookings';
+import AdminComplaints from '../components/AdminComplaints';
+import AdminEvents from '../components/AdminEvents';
+import { useAuth } from '@/context/AuthContext';
 
 const stats = [
   { label: 'Pending Bookings', value: '5', icon: CheckSquare, color: 'text-amber-400' },
@@ -16,44 +17,25 @@ const stats = [
 ];
 
 export default function AdminDashboard() {
+  const { tab } = useParams();
   const navigate = useNavigate();
+  const { user, profile, signOut } = useAuth();
   const [announcements, setAnnouncements] = useState<any[]>([]);
   const [userEmail, setUserEmail] = useState<string>('');
   const [newTitle, setNewTitle] = useState('');
   const [newContent, setNewContent] = useState('');
-  const [activeTab, setActiveTab] = useState('overview');
+  const activeTab = tab || 'overview';
 
   useEffect(() => {
-    const init = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        navigate('/login');
-        return;
-      }
-      
-      setUserEmail(user.email || 'Admin');
-
-      const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-      const role = profile?.role || user.user_metadata?.role || 'ADMIN';
-
-      // Auto-heal: If profile is missing (due to trigger failure), create it now
-      if (!profile) {
-        await supabase.from('profiles').insert([{
-          id: user.id,
-          email: user.email,
-          role: role
-        }]);
-      }
-
-      if (role !== 'ADMIN') {
+    if (user && profile) {
+      if (profile.role !== 'ADMIN') {
         navigate('/dashboard');
         return;
       }
-
+      setUserEmail(user.email || 'Admin');
       fetchAnnouncements();
-    };
-    init();
-  }, [navigate]);
+    }
+  }, [user, profile, navigate]);
 
   const fetchAnnouncements = async () => {
     const { data } = await supabase.from('announcements').select('*').order('created_at', { ascending: false }).limit(5);
@@ -61,13 +43,12 @@ export default function AdminDashboard() {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await signOut();
     navigate('/login');
   };
 
   const postAnnouncement = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
     const { error } = await supabase.from('announcements').insert([{ title: newTitle, content: newContent, author_id: user.id }]);
@@ -111,18 +92,18 @@ export default function AdminDashboard() {
 
       {/* Navigation Tabs */}
       <div className="flex space-x-2 overflow-x-auto pb-4 mb-6 scrollbar-hide border-b border-white/10">
-        {tabs.map(tab => (
+        {tabs.map(tabItem => (
           <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            key={tabItem.id}
+            onClick={() => navigate(`/admin/${tabItem.id}`)}
             className={`flex items-center space-x-2 px-4 py-2 rounded-xl whitespace-nowrap transition-all ${
-              activeTab === tab.id 
+              activeTab === tabItem.id 
                 ? 'bg-white/10 text-white shadow-lg border border-white/10' 
                 : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
             }`}
           >
-            <tab.icon className="w-4 h-4" />
-            <span className="font-medium text-sm">{tab.label}</span>
+            <tabItem.icon className="w-4 h-4" />
+            <span className="font-medium text-sm">{tabItem.label}</span>
           </button>
         ))}
       </div>
