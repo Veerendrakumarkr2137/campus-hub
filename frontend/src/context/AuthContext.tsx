@@ -5,6 +5,7 @@ interface AuthContextType {
   user: any | null;
   profile: any | null;
   loading: boolean;
+  profileLoading: boolean;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -15,8 +16,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<any | null>(null);
   const [profile, setProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(false);
 
   const fetchProfile = async (userId: string) => {
+    setProfileLoading(true);
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -32,6 +35,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err) {
       console.error('Error fetching profile:', err);
       setProfile(null);
+    } finally {
+      setProfileLoading(false);
     }
   };
 
@@ -54,10 +59,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (mounted) {
         if (session?.user) {
           setUser(session.user);
-          // Fetch profile in background, don't block the main UI
           fetchProfile(session.user.id);
         }
-        // Set loading to false as soon as we know the session status
         setLoading(false);
       }
     };
@@ -85,7 +88,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signOut, refreshProfile }}>
+    <AuthContext.Provider value={{ user, profile, loading, profileLoading, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

@@ -12,9 +12,9 @@ function App() {
       <AuthProvider>
         <Router>
           <div className="relative min-h-screen w-full overflow-hidden">
-            {/* 3D Background */}
+            {/* 3D Background - Temporarily disabled for debugging */}
             <div className="absolute inset-0 z-0 pointer-events-none">
-              <ThreeBackground />
+              {/* <ThreeBackground /> */}
             </div>
             
             {/* Main Content */}

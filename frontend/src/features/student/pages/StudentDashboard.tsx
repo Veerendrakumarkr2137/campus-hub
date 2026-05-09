@@ -36,37 +36,60 @@ export default function StudentDashboard() {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [announcements, setAnnouncements] = useState<any[]>([]);
 
+  const fetchNotifications = async (id: string) => {
+    try {
+      const { data } = await supabase.from('notifications').select('*').eq('user_id', id).order('created_at', { ascending: false }).limit(5);
+      if (data) setNotifications(data);
+    } catch (e) {
+      console.warn('Notifications table might be missing:', e);
+    }
+  };
+
+  const fetchAnnouncements = async () => {
+    try {
+      const { data } = await supabase.from('announcements').select('*').order('created_at', { ascending: false }).limit(3);
+      if (data) setAnnouncements(data);
+    } catch (e) {
+      console.warn('Announcements table might be missing:', e);
+    }
+  };
+
   useEffect(() => {
+    console.log('[StudentDashboard] State Check - User:', user?.email, 'Profile:', profile?.role);
     if (user && profile) {
       setUserId(user.id);
       setUserEmail(user.email || '');
       setUserName(profile.full_name || user.email?.split('@')[0]);
       fetchNotifications(user.id);
       fetchAnnouncements();
-      setupSubscriptions(user.id);
+      
+      // Setup realtime subscription
+      const channel = supabase.channel(`notifications-${user.id}`)
+        .on('postgres_changes', { 
+          event: 'INSERT', 
+          schema: 'public', 
+          table: 'notifications', 
+          filter: `user_id=eq.${user.id}` 
+        }, () => fetchNotifications(user.id))
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [user, profile]);
+
+  if (!user || !profile) {
+    return (
+      <div className="flex-1 flex items-center justify-center min-h-screen">
+        <div className="h-12 w-12 rounded-full border-2 border-t-blue-500 border-white/10 animate-spin"></div>
+      </div>
+    );
+  }
 
   const refreshProfile = async () => {
      const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', userId).single();
      if (profile) setUserName(profile.full_name || userEmail.split('@')[0]);
-  };
-
-  const fetchNotifications = async (id: string) => {
-    const { data } = await supabase.from('notifications').select('*').eq('user_id', id).order('created_at', { ascending: false }).limit(5);
-    if (data) setNotifications(data);
-  };
-
-  const fetchAnnouncements = async () => {
-    const { data } = await supabase.from('announcements').select('*').order('created_at', { ascending: false }).limit(3);
-    if (data) setAnnouncements(data);
-  };
-
-  const setupSubscriptions = (id: string) => {
-    supabase.channel('custom-all-channel')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${id}` }, 
-        () => fetchNotifications(id)
-      ).subscribe();
   };
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
@@ -110,6 +133,7 @@ export default function StudentDashboard() {
             <AnimatePresence>
               {showNotifications && (
                 <motion.div 
+                   key="notifications-dropdown"
                   initial={{ opacity: 0, y: 10, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 10, scale: 0.95 }}
@@ -132,8 +156,8 @@ export default function StudentDashboard() {
                              await supabase.from('notifications').update({ is_read: true }).eq('id', n.id);
                              setNotifications(prev => prev.map(item => item.id === n.id ? { ...item, is_read: true } : item));
                              if (n.message.toLowerCase().includes('event') || n.message.toLowerCase().includes('hackathon')) {
-                               navigate('/dashboard/events');
-                               setShowNotifications(false);
+                                navigate('/dashboard/events');
+                                setShowNotifications(false);
                              }
                           }}
                           className={`p-4 border-b border-white/5 hover:bg-white/5 cursor-pointer transition-colors ${!n.is_read ? 'bg-blue-500/5' : ''}`}
