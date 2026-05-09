@@ -38,8 +38,15 @@ export default function AdminLogin() {
         // Verify they are actually an admin
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
-           const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-           if (profile?.role !== 'ADMIN') {
+           const { data: profile, error: profileError } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+           
+           if (profileError) {
+               console.error("Profile check error:", profileError);
+           }
+
+           const role = profile?.role || user.user_metadata?.role;
+
+           if (role !== 'ADMIN') {
                await supabase.auth.signOut();
                throw new Error("Access Denied: You do not have Administrator privileges.");
            }
