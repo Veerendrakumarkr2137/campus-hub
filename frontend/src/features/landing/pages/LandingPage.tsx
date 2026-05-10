@@ -7,7 +7,6 @@ import {
   BellRing, 
   ShieldCheck, 
   ChevronRight, 
-  Zap, 
   Users, 
   Globe, 
   BarChart3,
@@ -77,8 +76,8 @@ const LandingPage = () => {
       <nav className="fixed top-0 left-0 w-full z-[100] border-b border-white/5 bg-slate-950/20 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center space-x-3 group cursor-pointer">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-blue-600 to-emerald-500 flex items-center justify-center shadow-lg group-hover:rotate-6 transition-transform">
-              <Zap className="w-6 h-6 text-white fill-white" />
+            <div className="h-10 w-10 rounded-xl overflow-hidden flex items-center justify-center shadow-lg group-hover:rotate-6 transition-transform">
+              <img src="/logo.png" alt="Campus Hub Logo" className="w-full h-full object-cover" />
             </div>
             <span className="text-xl font-black text-white tracking-tight">CampusHub</span>
           </div>
@@ -234,8 +233,8 @@ const LandingPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
             <div className="md:col-span-2 space-y-6">
               <div className="flex items-center space-x-3">
-                <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-blue-600 to-emerald-500 flex items-center justify-center">
-                  <Zap className="w-6 h-6 text-white fill-white" />
+                <div className="h-10 w-10 rounded-xl overflow-hidden flex items-center justify-center">
+                  <img src="/logo.png" alt="Campus Hub Logo" className="w-full h-full object-cover" />
                 </div>
                 <span className="text-2xl font-black text-white tracking-tight">CampusHub</span>
               </div>
