@@ -6,13 +6,10 @@ import {
   Calendar, 
   MessageSquare, 
   Bell, 
-  Search, 
   LogOut,
   BellRing,
   ExternalLink,
   ChevronRight,
-  Menu,
-  X,
   LayoutGrid
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';

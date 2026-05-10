@@ -6,9 +6,6 @@ import {
   ShieldCheck, 
   GraduationCap, 
   FileCheck, 
-  CheckCircle2, 
-  AlertCircle, 
-  Clock, 
   Edit2, 
   Check, 
   X,
@@ -37,7 +34,7 @@ export default function StudentProfile({ userEmail, userId, onUpdate }: { userEm
 
   const fetchProfile = async () => {
     try {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('profiles')
         .select('full_name, college_id, department')
         .eq('id', userId)

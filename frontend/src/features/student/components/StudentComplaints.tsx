@@ -9,7 +9,6 @@ import {
   FileText,
   Search,
   ChevronRight,
-  Filter,
   Camera,
   Paperclip,
   ChevronDown,
